@@ -33,7 +33,6 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function searchProducts(query) {
   const q = String(query || '').toLowerCase();
   const results = products.filter((p) => p.name.toLowerCase().includes(q));
-  console.log("🚀 ~ searchProducts ~ q:", q, results)
   await sleep(150 + results.length * 70);
   return results;
 }
