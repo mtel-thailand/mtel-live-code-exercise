@@ -84,7 +84,6 @@ export default function Home() {
 
         <ul className="list">
           {products.map((product) => {
-            console.log("🚀 ~ Home ~ product:", product)
             return <li key={product.id} className="row">
               <span className="name">{product.name}</span>
               <span className="category">{product.categoryName}</span>
