@@ -1,7 +1,7 @@
 export default function Cart({ items, onUpdateQty, onRemove }) {
-  const totalItems = items.reduce((count, item) => count + item.qty, 0);
+  const totalItems = items.reduce((count, item) => Number(count) + Number(item.qty), 0);
   const grandTotal = items.reduce(
-    (sum, item) => sum + item.price * item.qty,
+    (sum, item) => sum + Number(item.price) * Number(item.qty),
     0
   );
 

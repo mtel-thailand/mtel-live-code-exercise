@@ -12,9 +12,9 @@ export default async function handler(req, res) {
   const pageNum = Number(page);
   const size = Number(pageSize);
 
-  const start = pageNum * size;
+  const start = (pageNum-1) * size;
   const paged = results.slice(start, start + size);
-  const totalPages = Math.floor(total / size);
+  const totalPages = Math.ceil(total / size);
 
   // Attach the category name to every product before returning.
   const enriched = paged.map(async (product) => {
@@ -22,5 +22,5 @@ export default async function handler(req, res) {
     return { ...product, categoryName: category.name };
   });
 
-  res.status(200).json({ products: enriched, total, totalPages, page: pageNum });
+  res.status(200).json({ products: await Promise.all(enriched), total, totalPages, page: pageNum });
 }

@@ -45,8 +45,17 @@ export default function Home() {
     }
   };
 
-  const updateQty = (id, qty) =>
-    setCart(cart.map((item) => (item.id === id ? { ...item, qty } : item)));
+  const updateQty = (id, qty) => {
+    let newQty = Number(qty);
+    const currentItem = cart.find((item) => item.id === id);
+    if (newQty > currentItem.stock) {
+      newQty = currentItem.stock;
+    }else if (newQty < 1) {
+      newQty = 1;
+    }
+    newQty = cart.map((item) => (item.id === id ? { ...item, qty: newQty } : item));
+    setCart(newQty);
+  };
 
   const removeItem = (id) =>
     setCart(cart.filter((item) => item.id !== id));
@@ -74,8 +83,8 @@ export default function Home() {
         </div>
 
         <ul className="list">
-          {products.map((product) => (
-            <li key={product.id} className="row">
+          {products.map((product) => {
+            return <li key={product.id} className="row">
               <span className="name">{product.name}</span>
               <span className="category">{product.categoryName}</span>
               <span className="stock">{product.stock} in stock</span>
@@ -83,8 +92,8 @@ export default function Home() {
               <button className="add" onClick={() => addToCart(product)}>
                 Add
               </button>
-            </li>
-          ))}
+            </li>;
+          })}
         </ul>
 
         <div className="pager">
