@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import Cart from '../components/Cart';
+import { useEffect, useMemo, useState } from "react";
+import Cart from "../components/Cart";
 
 const PAGE_SIZE = 5;
 
 export default function Home() {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [products, setProducts] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
@@ -19,10 +19,11 @@ export default function Home() {
   useEffect(() => {
     setLoading(true);
     fetch(
-      `/api/products?search=${encodeURIComponent(query)}&page=${page}&pageSize=${PAGE_SIZE}`
+      `/api/products?search=${encodeURIComponent(query)}&page=${page}&pageSize=${PAGE_SIZE}`,
     )
       .then((res) => res.json())
       .then((data) => {
+        console.log("data", data);
         setProducts(data.products);
         setTotalPages(data.totalPages);
         setLoading(false);
@@ -36,9 +37,13 @@ export default function Home() {
     const existing = cart.find((item) => item.id === product.id);
     if (existing) {
       setCart(
-        cart.map((item) =>
-          item.id === product.id ? { ...item, qty: item.qty + 1 } : item
-        )
+        cart.map((item) => {
+          if (item.id === product.id && item.qty >= product.stock) {
+            return item;
+          }
+
+          return item.id === product.id ? { ...item, qty: item.qty + 1 } : item;
+        }),
       );
     } else {
       setCart([...cart, { ...product, qty: 1 }]);
@@ -46,10 +51,25 @@ export default function Home() {
   };
 
   const updateQty = (id, qty) =>
-    setCart(cart.map((item) => (item.id === id ? { ...item, qty } : item)));
+    setCart(
+      cart.map((item) => {
+        if (item.id === id && qty > item.stock) {
+          return item;
+        }
 
-  const removeItem = (id) =>
-    setCart(cart.filter((item) => item.id !== id));
+        return item.id === id ? { ...item, qty } : item;
+      }),
+    );
+
+  const cartItemsAmount = useMemo(() => {
+    const data = new Map();
+    for (const item of cart) {
+      data.set(item.id, item.qty);
+    }
+    return data;
+  }, [cart]);
+
+  const removeItem = (id) => setCart(cart.filter((item) => item.id !== id));
 
   return (
     <main className="page">
@@ -67,12 +87,13 @@ export default function Home() {
         />
 
         <div className="meta">
-          <span>{loading ? 'Loading…' : `${products.length} shown`}</span>
+          <span>{loading ? "Loading…" : `${products.length} shown`}</span>
           <span className="query-echo">
-            {query ? `for “${query}”` : 'showing all products'}
+            {query ? `for “${query}”` : "showing all products"}
           </span>
         </div>
 
+        {/* {!loading && ( */}
         <ul className="list">
           {products.map((product) => (
             <li key={product.id} className="row">
@@ -80,18 +101,20 @@ export default function Home() {
               <span className="category">{product.categoryName}</span>
               <span className="stock">{product.stock} in stock</span>
               <span className="price">${product.price}</span>
-              <button className="add" onClick={() => addToCart(product)}>
+              <button
+                className="add"
+                disabled={product.stock === cartItemsAmount.get(product.id)}
+                onClick={() => addToCart(product)}
+              >
                 Add
               </button>
             </li>
           ))}
         </ul>
+        {/* )} */}
 
         <div className="pager">
-          <button
-            disabled={page <= 1}
-            onClick={() => setPage((p) => p - 1)}
-          >
+          <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
             ‹ Prev
           </button>
           <span>

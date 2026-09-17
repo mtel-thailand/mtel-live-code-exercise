@@ -2,9 +2,9 @@ export default function Cart({ items, onUpdateQty, onRemove }) {
   const totalItems = items.reduce((count, item) => count + item.qty, 0);
   const grandTotal = items.reduce(
     (sum, item) => sum + item.price * item.qty,
-    0
+    0,
   );
-
+  console.log("items", items);
   return (
     <aside className="cart">
       <h2>Cart</h2>
@@ -20,6 +20,7 @@ export default function Cart({ items, onUpdateQty, onRemove }) {
               type="number"
               min="1"
               value={item.qty}
+              disabled={item.stock === 0}
               onChange={(e) => onUpdateQty(item.id, e.target.value)}
             />
             <span className="cart-subtotal">${item.price * item.qty}</span>
